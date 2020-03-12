@@ -1,0 +1,113 @@
+openapi: 3.0.2
+info:
+  title: quotation-service
+  version: 1.0.0
+servers:
+  - url: /quotation-service/api/v1
+
+paths:
+  /elvls:
+    get:
+      operationId: getAllElvls
+      responses:
+        200:
+          description: Успех
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/GetElvlsResponse'
+        default:
+          description: Ошибка
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /elvls/{isin}:
+    get:
+      operationId: getElvl
+      parameters:
+        - name: isin
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Isin'
+      responses:
+        200:
+          description: Успех
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/Elvl'
+        default:
+          description: Ошибка
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      operationId: addElvl
+      parameters:
+        - name: isin
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/Isin'
+      requestBody:
+        required: true
+        content:
+          application/json;charset=UTF-8:
+            schema:
+              $ref: '#/components/schemas/AddElvlRequest'
+      responses:
+        201:
+          description: Успех
+          content:
+            application/json;charset=UTF-8:
+              schema:
+                $ref: '#/components/schemas/Elvl'
+components:
+  schemas:
+    Error:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+    GetElvlsResponse:
+      type: array
+      items:
+        $ref: '#/components/schemas/ElvlData'
+    ElvlData:
+      type: object
+      required:
+        - elvl
+        - isin
+      properties:
+        elvl:
+          $ref: '#/components/schemas/Elvl'
+        isin:
+          $ref: '#/components/schemas/Isin'
+    AddElvlRequest:
+      type: object
+      required:
+        - ask
+        - isin
+      properties:
+        ask:
+          $ref: '#/components/schemas/Elvl'
+        bid:
+          $ref: '#/components/schemas/Elvl'
+        isin:
+          $ref: '#/components/schemas/Isin'
+    Isin:
+      type: string
+      pattern: '^[\d\D]{12}$'
+      minLength: 12
+      maxLength: 12
+    Elvl:
+      type: integer
+      minimum: 0
