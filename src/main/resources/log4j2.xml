@@ -2,7 +2,7 @@
 <Configuration>
     <Properties>
         <Property name="LOG_PATTERN">
-            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p --- [%15.15t] %X: %-40.40c{1.} %m%n%ex
+            %d{yyyy-MM-dd HH:mm:ss.SSS} %5p --- [%15.15t] %X: %c{10} %m%n%ex
         </Property>
     </Properties>
     <Appenders>
@@ -26,10 +26,6 @@
     </Appenders>
     <Loggers>
         <Logger name="ru.kononov.quotationservice" level="trace" additivity="false">
-            <AppenderRef ref="FileAppender"/>
-            <AppenderRef ref="ConsoleAppender"/>
-        </Logger>
-        <Logger name="com.sun" level="trace" additivity="false">
             <AppenderRef ref="FileAppender"/>
             <AppenderRef ref="ConsoleAppender"/>
         </Logger>

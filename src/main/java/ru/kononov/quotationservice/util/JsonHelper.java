@@ -21,7 +21,7 @@ public class JsonHelper {
         try {
             return objectMapper.readValue(payload, clazz);
         } catch (IOException e) {
-            throw newApplicationException(e, resolve(), V_REQUEST, String.format("Не удалось выпонить десериализацию объекта типа '%s'", clazz.getName()));
+            throw newApplicationException(e, resolve(), V_REQUEST, e.getMessage());
         }
     }
 
@@ -29,7 +29,7 @@ public class JsonHelper {
         try {
             return objectMapper.writeValueAsBytes(entity);
         } catch (JsonProcessingException e) {
-            throw newApplicationException(e, resolve(), Z_SYSTEM, String.format("Не удалось выполнить сериализацию объекта типа '%s' в массив байт", entity.getClass().getName()));
+            throw newApplicationException(e, resolve(), Z_SYSTEM, e.getMessage());
         }
     }
 

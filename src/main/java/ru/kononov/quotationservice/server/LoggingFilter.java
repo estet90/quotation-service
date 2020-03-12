@@ -14,6 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
 import static java.util.Objects.nonNull;
+import static ru.kononov.quotationservice.error.exception.ExceptionCode.Z_SYSTEM;
+import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
+import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.resolve;
 
 @Log4j2
 public class LoggingFilter extends Filter {
@@ -37,7 +40,7 @@ public class LoggingFilter extends Filter {
         }
     }
 
-    private void logRequest(HttpExchange exchange, Chain chain) throws IOException {
+    private void logRequest(HttpExchange exchange, Chain chain) {
         try (var inputStream = exchange.getRequestBody()) {
             var byteStream = new ByteArrayOutputStream();
             IOUtils.copy(inputStream, byteStream);
@@ -50,8 +53,9 @@ public class LoggingFilter extends Filter {
             }
             chain.doFilter(exchange);
         } catch (Exception e) {
-            log.error("error", e);
-            throw e;
+            var applicationException = newApplicationException(resolve(), Z_SYSTEM, e.getMessage());
+            log.error("LoggingFilter.logRequest.thrown", e);
+            throw applicationException;
         }
     }
 

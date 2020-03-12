@@ -9,6 +9,9 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import static java.util.Objects.requireNonNull;
+import static ru.kononov.quotationservice.error.exception.ExceptionCode.Z_SYSTEM;
+import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
+import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.resolve;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class RequestReader {
@@ -19,7 +22,7 @@ public class RequestReader {
             IOUtils.copy(inputStream, result);
             return result.toByteArray();
         } catch (IOException | NullPointerException e) {
-            throw new IllegalArgumentException("Не удалось извлечь тело запроса", e);
+            throw newApplicationException(resolve(), Z_SYSTEM, "Не удалось извлечь тело запроса", e.getMessage());
         }
     }
 

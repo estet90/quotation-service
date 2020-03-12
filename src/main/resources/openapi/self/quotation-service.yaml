@@ -87,7 +87,7 @@ components:
         - elvl
         - isin
       properties:
-        elvl:
+        value:
           $ref: '#/components/schemas/Elvl'
         isin:
           $ref: '#/components/schemas/Isin'
@@ -109,5 +109,5 @@ components:
       minLength: 12
       maxLength: 12
     Elvl:
-      type: integer
+      type: number
       minimum: 0

@@ -8,7 +8,7 @@ import ru.kononov.quotationservice.util.db.DbHelper;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-
+import java.math.BigDecimal;
 import java.sql.Connection;
 
 import static java.util.Optional.ofNullable;
@@ -29,7 +29,7 @@ public class AddElvlOperation {
         this.dbHelper = dbHelper;
     }
 
-    public Integer process(AddElvlRequest request) {
+    public BigDecimal process(AddElvlRequest request) {
         var point = "AddElvlOperation.process";
         return OperationWrapper.wrap(log, point, () -> {
             var ask = request.getAsk();
@@ -45,17 +45,17 @@ public class AddElvlOperation {
         });
     }
 
-    private Integer insertElvl(String point, Integer ask, Integer bid, Connection connection, String isin) {
+    private BigDecimal insertElvl(String point, BigDecimal ask, BigDecimal bid, Connection connection, String isin) {
         var elvl = ofNullable(bid).orElse(ask);
         quotationDaoAdapter.insertElvl(connection, isin, elvl);
         log.info("{} данные добавлены", point);
         return elvl;
     }
 
-    private Integer updateElvl(String point, Integer ask, Integer bid, Connection connection, String isin, Integer value) {
+    private BigDecimal updateElvl(String point, BigDecimal ask, BigDecimal bid, Connection connection, String isin, BigDecimal value) {
         var elvl = ofNullable(bid)
-                .filter(b -> b > value)
-                .orElseGet(() -> ask < value ? ask : value);
+                .filter(b -> b.compareTo(value) > 0)
+                .orElseGet(() -> ask.compareTo(value) < 0 ? ask : value);
         if (!value.equals(elvl)) {
             quotationDaoAdapter.updateElvl(connection, isin, elvl);
             log.info("{} данные обновлены", point);
@@ -65,9 +65,9 @@ public class AddElvlOperation {
         return elvl;
     }
 
-    private void validateRequest(Integer ask, Integer bid) {
+    private void validateRequest(BigDecimal ask, BigDecimal bid) {
         ofNullable(bid).ifPresent(b -> {
-            if (b >= ask) {
+            if (b.compareTo(ask) >= 0) {
                 throw newApplicationException(resolve(), B_REQUEST, "Параметр bid должен быть меньше ask");
             }
         });

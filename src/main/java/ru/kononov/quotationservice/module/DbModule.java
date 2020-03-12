@@ -4,23 +4,20 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dagger.Module;
 import dagger.Provides;
+import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
 import java.io.File;
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static ru.kononov.quotationservice.error.exception.ExceptionCode.Z_SYSTEM;
-import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
-import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.resolve;
-
 @Module
+@Log4j2
 public class DbModule {
 
     @Provides
@@ -28,7 +25,9 @@ public class DbModule {
     @Named("quotationDataSource")
     DataSource quotationDataSource() {
         var config = new HikariConfig();
-        config.setJdbcUrl("jdbc:h2:mem:" + resolveInitScript());
+        var dbUrl = "jdbc:h2:mem:" + resolveInitScript();
+        log.info("DbModule.quotationDataSource {}", dbUrl);
+        config.setJdbcUrl(dbUrl);
         return new HikariDataSource(config);
     }
 
@@ -41,14 +40,11 @@ public class DbModule {
                 .collect(Collectors.joining("\\;", "quotation;INIT=", ""));
     }
 
+    @SneakyThrows
     private File[] resolveSqlScriptFiles(String dbResourceFolder) {
-        try {
-            var url = DbModule.class.getClassLoader().getResources(dbResourceFolder).nextElement();
-            var directory = Paths.get(url.toURI());
-            return Objects.requireNonNull(directory.toFile().listFiles());
-        } catch (IOException | URISyntaxException e) {
-            throw newApplicationException(e, resolve(), Z_SYSTEM, "Ошибка при чтении файлов");
-        }
+        var url = DbModule.class.getClassLoader().getResources(dbResourceFolder).nextElement();
+        var directory = Paths.get(url.toURI());
+        return Objects.requireNonNull(directory.toFile().listFiles());
     }
 
 }

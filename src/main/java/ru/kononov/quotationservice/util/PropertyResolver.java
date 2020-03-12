@@ -38,7 +38,7 @@ public class PropertyResolver {
         try {
             requireNonNull(key);
             var value = requireNonNull(properties.getProperty(key));
-            log.info("PropertyResolver.getProperty.out key={} value={}", key, value);
+            log.info("PropertyResolver.getProperty key={} value={}", key, value);
             return transformer.apply(value);
         } catch (Exception e) {
             log.error("PropertyResolver.getProperty.thrown key={}", key, e);

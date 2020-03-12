@@ -9,18 +9,20 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Supplier;
 
+import static java.util.Objects.isNull;
+
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class DbLoggerHelper {
 
     /**
      * Выполнение запросов с логированием при уровнях логирования DEBUG/TRACE
      *
-     * @param logger логгер, который будет вести запись
-     * @param point шаблон для логирования
-     * @param sqlSupplier коллбэк, возвращающий строку запроса к БД
+     * @param logger             логгер, который будет вести запись
+     * @param point              шаблон для логирования
+     * @param sqlSupplier        коллбэк, возвращающий строку запроса к БД
      * @param parametersSupplier коллбэк, возвращающий параметры запроса
-     * @param query коллбэк, возвращающий результат запроса
-     * @param <T> тип результата
+     * @param query              коллбэк, возвращающий результат запроса
+     * @param <T>                тип результата
      * @return результат запроса
      */
     public static <T> T executeWithLogging(Logger logger,
@@ -44,7 +46,11 @@ public class DbLoggerHelper {
 
     private static void logIn(String point, Logger logger, String query, Object... parameters) {
         if (logger.isTraceEnabled()) {
-            logger.trace("{}.in\n\tзапрос: {}\n\tпараметры:{}", point, query, parameters);
+            if (isNull(parameters)) {
+                logger.trace("{}.in\n\tзапрос без параметров: {}", point, query);
+            } else {
+                logger.trace("{}.in\n\tзапрос: {}\n\tпараметры:{}", point, query, parameters);
+            }
         } else if (logger.isDebugEnabled()) {
             logger.debug("{}.in", point);
         }

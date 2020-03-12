@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.function.Function;
 
-import static java.util.Objects.isNull;
 import static ru.kononov.quotationservice.error.exception.ExceptionCode.I_DB;
 import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
 import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.resolve;
@@ -42,7 +41,7 @@ public class DbHelper {
         try (var connection = dataSource.getConnection()) {
             return select(connection, sql, resultSetExtractor, parameters);
         } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB);
+            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
         }
     }
 
@@ -59,10 +58,7 @@ public class DbHelper {
             for (int i = 0; i < parameters.length; i++) {
                 preparedStatement.setObject(i + 1, parameters[i]);
             }
-            try (var resultSet = preparedStatement.getResultSet()) {
-                if (isNull(resultSet)) {
-                    return List.of();
-                }
+            try (var resultSet = preparedStatement.executeQuery()) {
                 var result = new ArrayList<T>();
                 while (resultSet.next()) {
                     var row = resultSetExtractor.extract(resultSet);
@@ -71,7 +67,7 @@ public class DbHelper {
                 return result;
             }
         } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB);
+            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
         }
     }
 
@@ -84,7 +80,7 @@ public class DbHelper {
         try (var connection = dataSource.getConnection()) {
             return insert(connection, sql, parameters);
         } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB);
+            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
         }
     }
 
@@ -107,7 +103,7 @@ public class DbHelper {
                 throw newApplicationException(resolve(), I_DB, "Не удалось выполнить INSERT");
             }
         } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB);
+            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
         }
     }
 
@@ -120,7 +116,7 @@ public class DbHelper {
         try (var connection = dataSource.getConnection()) {
             return update(connection, sql, parameters);
         } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB);
+            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
         }
     }
 
@@ -137,7 +133,7 @@ public class DbHelper {
             }
             return preparedStatement.executeUpdate();
         } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB);
+            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
         }
     }
 
@@ -162,7 +158,7 @@ public class DbHelper {
             }
         } catch (Exception e) {
             log.error("DbHelper.inTransaction.thrown {}", e.getMessage());
-            throw newApplicationException(e, resolve(), I_DB, String.format("Произошёл откат транзакции с transactionId = %s", ThreadContext.get("transactionId")));
+            throw newApplicationException(e, resolve(), I_DB, String.format("Произошёл откат транзакции с transactionId = '%s'", ThreadContext.get("transactionId")), e.getMessage());
         } finally {
             ThreadContext.remove("transactionId");
         }

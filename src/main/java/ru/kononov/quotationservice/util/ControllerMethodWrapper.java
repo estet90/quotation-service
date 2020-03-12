@@ -25,15 +25,15 @@ public class ControllerMethodWrapper {
         try {
             handler.accept(exchange);
         } catch (ApplicationException e) {
-            logger.error("{}.thrown", point, e);
+            logger.error("{}.thrown {}", point, e.getMessage(), e);
             if (e.isValidationException()) {
                 clientErrorHandler.accept(exchange, e);
             } else {
                 serverErrorHandler.accept(exchange, e);
             }
         } catch (Exception e) {
-            var applicationException = newApplicationException(e, resolve(), Z_INTERNAL);
-            logger.error("{}.thrown", point, applicationException);
+            var applicationException = newApplicationException(e, resolve(), Z_INTERNAL, e.getMessage());
+            logger.error("{}.thrown {}", point, applicationException.getMessage(), applicationException);
             serverErrorHandler.accept(exchange, applicationException);
         }
     }
