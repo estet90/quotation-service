@@ -21,7 +21,7 @@ public class GetElvlOperation {
     }
 
     public BigDecimal process(String isin) {
-        return OperationWrapper.wrap(log, "GetAllElvlsOperation.process", () -> quotationDaoAdapter.getElvl(isin)
+        return OperationWrapper.wrap(log, "GetElvlOperation.process", () -> quotationDaoAdapter.getElvl(isin)
                 .map(Elvl::getValue).orElse(null));
     }
 

@@ -59,6 +59,9 @@ dependencies {
             "org.projectlombok:lombok:$lombokVersion",
             "org.hibernate.validator:hibernate-validator-annotation-processor:$hibernameValidatorVersion"
     )
+    testAnnotationProcessor(
+            "com.google.dagger:dagger-compiler:$daggerVersion"
+    )
 }
 
 def generatedFilesPath = "$projectDir/build/generated/sources"
