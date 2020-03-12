@@ -20,8 +20,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 import static ru.kononov.quotationservice.constant.MdcKey.OPERATION_NAME;
-import static ru.kononov.quotationservice.error.exception.ExceptionCode.V_REQUEST;
-import static ru.kononov.quotationservice.error.exception.ExceptionCode.Z_SYSTEM;
+import static ru.kononov.quotationservice.error.exception.ExceptionCode.*;
 import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
 import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.*;
 import static ru.kononov.quotationservice.util.ControllerMethodWrapper.wrap;
@@ -71,7 +70,7 @@ public class ElvlsController extends HttpController {
                             addElvl(point, exch);
                             break;
                         default:
-                            throw newApplicationException(UNKNOWN, Z_SYSTEM, String.format("Запрос типа '%s' не поддерживается", method));
+                            throw newApplicationException(UNKNOWN, V_UNSUPPORTED_METHOD, method);
                     }
                 },
                 (exch, e) -> writeClientErrorResponse(log, point, exch, e, this::errorToJson),

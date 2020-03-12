@@ -9,7 +9,7 @@ import javax.inject.Singleton;
 import static org.mockito.Mockito.mock;
 
 @Module
-public class DbTestModule {
+public class TestDbModule {
 
     @Provides
     @Singleton

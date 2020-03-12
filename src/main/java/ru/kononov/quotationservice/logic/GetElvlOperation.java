@@ -1,7 +1,6 @@
 package ru.kononov.quotationservice.logic;
 
 import lombok.extern.log4j.Log4j2;
-import ru.kononov.quotationservice.dto.Elvl;
 import ru.kononov.quotationservice.service.dao.QuotationDaoAdapter;
 import ru.kononov.quotationservice.util.OperationWrapper;
 
@@ -21,8 +20,7 @@ public class GetElvlOperation {
     }
 
     public BigDecimal process(String isin) {
-        return OperationWrapper.wrap(log, "GetElvlOperation.process", () -> quotationDaoAdapter.getElvl(isin)
-                .map(Elvl::getValue).orElse(null));
+        return OperationWrapper.wrap(log, "GetElvlOperation.process", () -> quotationDaoAdapter.getElvl(isin).orElse(null));
     }
 
 }

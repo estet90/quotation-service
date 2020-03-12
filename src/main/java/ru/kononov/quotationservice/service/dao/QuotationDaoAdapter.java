@@ -27,7 +27,7 @@ public class QuotationDaoAdapter {
         return dao.getElvl(connection, isin);
     }
 
-    public Optional<Elvl> getElvl(String isin) {
+    public Optional<BigDecimal> getElvl(String isin) {
         return dao.getElvl(isin);
     }
 

@@ -37,12 +37,9 @@ public class QuotationDao {
                 .map(list -> list.get(0));
     }
 
-    public Optional<Elvl> getElvl(String isin) {
+    public Optional<BigDecimal> getElvl(String isin) {
         var sql = "SELECT value FROM elvls WHERE isin = ?";
-        Supplier<List<Elvl>> resultCallback = () -> dbHelper.select(sql, rs -> new Elvl(
-                isin,
-                rs.getBigDecimal("value")
-        ), isin);
+        Supplier<List<BigDecimal>> resultCallback = () -> dbHelper.select(sql, rs -> rs.getBigDecimal("value"), isin);
         var result = executeWithLogging(log, "QuotationDao.getElvl", () -> sql, () -> isin, resultCallback);
         return ofNullable(result)
                 .filter(Predicate.not(List::isEmpty))
