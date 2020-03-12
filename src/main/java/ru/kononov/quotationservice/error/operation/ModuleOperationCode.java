@@ -5,7 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.apache.logging.log4j.ThreadContext;
 
 import static java.util.Optional.ofNullable;
-import static ru.kononov.quotationservice.constant.MdcKey.OPERATION_NAME;
+import static ru.kononov.quotationservice.constant.ThreadContextKey.OPERATION_NAME;
 
 @RequiredArgsConstructor
 @Getter

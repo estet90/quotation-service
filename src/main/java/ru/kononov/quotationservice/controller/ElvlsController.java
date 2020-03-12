@@ -19,7 +19,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
-import static ru.kononov.quotationservice.constant.MdcKey.OPERATION_NAME;
+import static ru.kononov.quotationservice.constant.ThreadContextKey.OPERATION_NAME;
 import static ru.kononov.quotationservice.error.exception.ExceptionCode.*;
 import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
 import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.*;
