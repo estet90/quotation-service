@@ -31,11 +31,13 @@ public class DbHelper {
     }
 
     /**
-     * @param sql
-     * @param resultSetExtractor
-     * @param parameters
-     * @param <T>
-     * @return
+     * Выбор нескольких строк с маппингом.
+     *
+     * @param sql                запрос
+     * @param resultSetExtractor маппинг
+     * @param parameters         параметры запроса
+     * @param <T>                тип, в который будет преобразована строка запроса
+     * @return список
      */
     public <T> List<T> select(String sql, ResultSetExtractor<T> resultSetExtractor, Object... parameters) {
         try (var connection = dataSource.getConnection()) {
@@ -46,12 +48,14 @@ public class DbHelper {
     }
 
     /**
-     * @param connection
-     * @param sql
-     * @param resultSetExtractor
-     * @param parameters
-     * @param <T>
-     * @return
+     * Выбор нескольких строк с маппингом и переданным соединением. При использовании данного метода соединение необходимо закрывать вручную.
+     *
+     * @param connection         используемое соединение
+     * @param sql                запрос
+     * @param resultSetExtractor маппинг
+     * @param parameters         параметры запроса
+     * @param <T>                тип, в который будет преобразована строка запроса
+     * @return список
      */
     public <T> List<T> select(Connection connection, String sql, ResultSetExtractor<T> resultSetExtractor, Object... parameters) {
         try (var preparedStatement = connection.prepareStatement(sql)) {
@@ -72,25 +76,14 @@ public class DbHelper {
     }
 
     /**
-     * @param sql
-     * @param parameters
-     * @return
+     * Вставка записи.
+     *
+     * @param connection используемое соединение
+     * @param sql        запрос
+     * @param parameters параметры запроса
+     * @return значение сгенерированного первичного ключа
      */
-    public long insert(String sql, Object... parameters) {
-        try (var connection = dataSource.getConnection()) {
-            return insert(connection, sql, parameters);
-        } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
-        }
-    }
-
-    /**
-     * @param connection
-     * @param sql
-     * @param parameters
-     * @return
-     */
-    public long insert(Connection connection, String sql, Object... parameters) {
+    public Object insert(Connection connection, String sql, Object... parameters) {
         try (var preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             for (int i = 0; i < parameters.length; i++) {
                 preparedStatement.setObject(i + 1, parameters[i]);
@@ -98,7 +91,7 @@ public class DbHelper {
             preparedStatement.executeUpdate();
             try (var resultSet = preparedStatement.getGeneratedKeys()) {
                 if (resultSet.next()) {
-                    return resultSet.getLong(1);
+                    return resultSet.getObject(1);
                 }
                 throw newApplicationException(resolve(), I_DB, "Не удалось выполнить INSERT");
             }
@@ -108,23 +101,12 @@ public class DbHelper {
     }
 
     /**
-     * @param sql
-     * @param parameters
-     * @return
-     */
-    public int update(String sql, Object... parameters) {
-        try (var connection = dataSource.getConnection()) {
-            return update(connection, sql, parameters);
-        } catch (SQLException e) {
-            throw newApplicationException(e, resolve(), I_DB, e.getMessage());
-        }
-    }
-
-    /**
-     * @param connection
-     * @param sql
-     * @param parameters
-     * @return
+     * Обновление записей
+     *
+     * @param connection используемое соединение
+     * @param sql        запрос
+     * @param parameters параметры запроса
+     * @return количество обновлённых записей
      */
     public int update(Connection connection, String sql, Object... parameters) {
         try (var preparedStatement = connection.prepareStatement(sql)) {
@@ -138,9 +120,11 @@ public class DbHelper {
     }
 
     /**
-     * @param query
-     * @param <T>
-     * @return
+     * Выполнение нескольких запросов в одной транзакции.
+     *
+     * @param query коллбэк, принимающий на вход соединение и возвращающий какой-то результат
+     * @param <T>   тип возвращаемого результата
+     * @return результат функции
      */
     public <T> T inTransaction(Function<Connection, T> query) {
         ThreadContext.put("transactionId", UUID.randomUUID().toString());

@@ -57,19 +57,19 @@ public class QuotationDao {
 
     public void insertElvl(Connection connection, String isin, BigDecimal value) {
         var sql = "INSERT INTO elvls (isin, value) VALUES (?, ?)";
-        Supplier<Long> resultCallback = () -> dbHelper.insert(connection, sql, isin, value);
+        Supplier<Object> resultCallback = () -> dbHelper.insert(connection, sql, isin, value);
         executeWithLogging(log, "QuotationDao.insertElvl", () -> sql, () -> new Object[]{isin, value}, resultCallback);
     }
 
     public void updateElvl(Connection connection, String isin, BigDecimal value) {
         var sql = "UPDATE elvls SET value=? WHERE isin = ?";
-        Supplier<Long> resultCallback = () -> dbHelper.insert(connection, sql, value, isin);
+        Supplier<Integer> resultCallback = () -> dbHelper.update(connection, sql, value, isin);
         executeWithLogging(log, "QuotationDao.insertElvl", () -> sql, () -> new Object[]{value, isin}, resultCallback);
     }
 
     public void insertHistory(Connection connection, String isin, BigDecimal ask, BigDecimal bid, OffsetDateTime date) {
         var sql = "INSERT INTO history (isin, ask, bid, date) VALUES (?, ?, ?, ?)";
-        Supplier<Long> resultCallback = () -> dbHelper.insert(connection, sql, isin, ask, bid, date);
+        Supplier<Object> resultCallback = () -> dbHelper.insert(connection, sql, isin, ask, bid, date);
         executeWithLogging(log, "QuotationDao.insertElvl", () -> sql, () -> new Object[]{isin, ask, bid, date}, resultCallback);
     }
 

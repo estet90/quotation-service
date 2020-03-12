@@ -7,7 +7,7 @@ import static java.util.Arrays.stream;
 public class ExceptionFactory {
 
     private static final String DEFAULT_MESSAGE = "Сообщение для ошибки не определено";
-    private static final String SERVICE_CODE = "0001";
+    private static final String SERVICE_CODE = "001";
 
     public static ApplicationException newApplicationException(ModuleOperationCode moduleOperationCode, ExceptionCode exceptionCode, String... args) {
         var message = prepareMessage(exceptionCode, args);

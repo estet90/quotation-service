@@ -20,6 +20,14 @@ import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.UN
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ResponseWriter {
 
+    /**
+     * Формирование ответа со статусом 200 (либо 204, если тело ответа пустое)
+     *
+     * @param logger          {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point           точка логирования из контроллера
+     * @param exchange        {@link HttpExchange}, в который будет записан ответ
+     * @param responseBuilder коллбэк, формирующий ответ
+     */
     public static void writeOkResponse(Logger logger,
                                        String point,
                                        HttpExchange exchange,
@@ -27,6 +35,14 @@ public class ResponseWriter {
         writeResponse(logger, point, exchange, responseBuilder, HttpURLConnection.HTTP_OK);
     }
 
+    /**
+     * Формирование ответа со статусом 202 (либо 204, если тело ответа пустое)
+     *
+     * @param logger          {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point           точка логирования из контроллера
+     * @param exchange        {@link HttpExchange}, в который будет записан ответ
+     * @param responseBuilder коллбэк, формирующий ответ
+     */
     public static void writeAcceptedResponse(Logger logger,
                                              String point,
                                              HttpExchange exchange,
@@ -34,6 +50,15 @@ public class ResponseWriter {
         writeResponse(logger, point, exchange, responseBuilder, HttpURLConnection.HTTP_ACCEPTED);
     }
 
+    /**
+     * Формирование ответа со статусом 400
+     *
+     * @param logger               {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point                точка логирования из контроллера
+     * @param exchange             {@link HttpExchange}, в который будет записан ответ
+     * @param e                    {@link ApplicationException} возникшая ошибка
+     * @param errorResponseBuilder коллбэк, формирующий ответ
+     */
     public static void writeClientErrorResponse(Logger logger,
                                                 String point,
                                                 HttpExchange exchange,
@@ -42,6 +67,15 @@ public class ResponseWriter {
         writeErrorResponse(logger, point, exchange, e, errorResponseBuilder, HttpURLConnection.HTTP_BAD_REQUEST);
     }
 
+    /**
+     * Формирование ответа со статусом 500
+     *
+     * @param logger               {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point                точка логирования из контроллера
+     * @param exchange             {@link HttpExchange}, в который будет записан ответ
+     * @param e                    {@link ApplicationException} возникшая ошибка
+     * @param errorResponseBuilder коллбэк, формирующий ответ
+     */
     public static void writeServerErrorResponse(Logger logger,
                                                 String point,
                                                 HttpExchange exchange,
@@ -50,6 +84,15 @@ public class ResponseWriter {
         writeErrorResponse(logger, point, exchange, e, errorResponseBuilder, HttpURLConnection.HTTP_INTERNAL_ERROR);
     }
 
+    /**
+     * Формирование ответа с произвольным статусом (либо 204, если тело ответа пустое)
+     *
+     * @param logger          {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point           точка логирования из контроллера
+     * @param exchange        {@link HttpExchange}, в который будет записан ответ
+     * @param responseBuilder коллбэк, формирующий ответ
+     * @param status          статус ответа
+     */
     private static void writeResponse(Logger logger,
                                       String point,
                                       HttpExchange exchange,
@@ -73,6 +116,13 @@ public class ResponseWriter {
         }
     }
 
+    /**
+     * Добавление тела ответа в {@link HttpExchange}
+     *
+     * @param exchange {@link HttpExchange}, в который будет записан ответ
+     * @param response массив байт ответа
+     * @throws IOException может возникнуть формировании ответа
+     */
     private static void writeResponseBody(HttpExchange exchange, byte[] response) throws IOException {
         try (var outputStream = exchange.getResponseBody();
              var bodyStream = new ByteArrayOutputStream()) {
@@ -82,6 +132,16 @@ public class ResponseWriter {
         }
     }
 
+    /**
+     * Формирование ответа с произвольным статусом на основе ошибки
+     *
+     * @param logger               {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point                точка логирования из контроллера
+     * @param exchange             {@link HttpExchange}, в который будет записан ответ
+     * @param e                    {@link ApplicationException} возникшая ошибка
+     * @param errorResponseBuilder коллбэк, формирующий ответ
+     * @param status               статус ответа
+     */
     private static void writeErrorResponse(Logger logger,
                                            String point,
                                            HttpExchange exchange,
