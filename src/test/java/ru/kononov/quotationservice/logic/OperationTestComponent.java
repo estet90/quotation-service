@@ -15,4 +15,8 @@ public interface OperationTestComponent {
 
     void inject(AddElvlOperationTest operationTest);
 
+    void inject(GetAllElvlsOperationTest operationTest);
+
+    void inject(GetElvlOperationTest operationTest);
+
 }
