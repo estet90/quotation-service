@@ -10,11 +10,17 @@ import lombok.extern.log4j.Log4j2;
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
-import java.io.File;
+import java.net.URI;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Objects;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @Module
 @Log4j2
@@ -34,17 +40,25 @@ public class DbModule {
     private String resolveInitScript() {
         var dbResourceFolder = "db";
         var files = resolveSqlScriptFiles(dbResourceFolder);
-        return Arrays.stream(files)
-                .map(File::getName)
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(files, Spliterator.ORDERED), false)
+                .map(Path::getFileName)
                 .map(name -> String.format("runscript from 'classpath:/%s/%s'", dbResourceFolder, name))
                 .collect(Collectors.joining("\\;", "quotation;INIT=", ""));
     }
 
     @SneakyThrows
-    private File[] resolveSqlScriptFiles(String dbResourceFolder) {
+    private Iterator<Path> resolveSqlScriptFiles(String dbResourceFolder) {
         var url = DbModule.class.getClassLoader().getResources(dbResourceFolder).nextElement();
-        var directory = Paths.get(url.toURI());
-        return Objects.requireNonNull(directory.toFile().listFiles());
+        Path directory;
+        var partsOfUri = url.toURI().toString().split("!");
+        if (partsOfUri.length == 1) { //запуск приложения из IDE
+            directory = Paths.get(url.toURI());
+        } else { //запуск jar
+            var fileSystem = FileSystems.newFileSystem(URI.create(partsOfUri[0]), new HashMap<String, String>());
+            directory = fileSystem.getPath(partsOfUri[1]);
+        }
+        return Files.newDirectoryStream(directory)
+                .iterator();
     }
 
 }
