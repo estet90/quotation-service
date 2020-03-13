@@ -5,6 +5,7 @@ import dagger.Module;
 import dagger.Provides;
 import ru.kononov.quotationservice.builder.ErrorBuilder;
 import ru.kononov.quotationservice.controller.ElvlsController;
+import ru.kononov.quotationservice.controller.SwaggerController;
 import ru.kononov.quotationservice.logic.AddElvlOperation;
 import ru.kononov.quotationservice.logic.GetAllElvlsOperation;
 import ru.kononov.quotationservice.logic.GetElvlOperation;
@@ -37,6 +38,12 @@ public class HttpControllerModule {
                                     GetElvlOperation getElvlOperation,
                                     ErrorBuilder errorBuilder) {
         return new ElvlsController(contextPath + "/elvls", addElvlOperation, getAllElvlsOperation, getElvlOperation, errorBuilder);
+    }
+
+    @Provides
+    @Singleton
+    SwaggerController swaggerController(@Named("contextPath") String contextPath) {
+        return new SwaggerController(contextPath + "/swagger");
     }
 
 }

@@ -85,7 +85,7 @@ public class ResponseWriter {
     }
 
     /**
-     * Формирование ответа с произвольным статусом (либо 204, если тело ответа пустое)
+     * Формирование ответа с произвольным статусом (либо 204, если тело ответа пустое) и контентом типа application/json;charset=UTF-8
      *
      * @param logger          {@link Logger} используется для логирования ошибок и предупреждений
      * @param point           точка логирования из контроллера
@@ -98,8 +98,27 @@ public class ResponseWriter {
                                       HttpExchange exchange,
                                       Supplier<byte[]> responseBuilder,
                                       int status) {
+        writeResponse(logger, point, exchange, responseBuilder, status, "application/json;charset=UTF-8");
+    }
+
+    /**
+     * Формирование ответа с произвольным статусом (либо 204, если тело ответа пустое) и произвольным типом контента
+     *
+     * @param logger          {@link Logger} используется для логирования ошибок и предупреждений
+     * @param point           точка логирования из контроллера
+     * @param exchange        {@link HttpExchange}, в который будет записан ответ
+     * @param responseBuilder коллбэк, формирующий ответ
+     * @param status          статус ответа
+     * @param contentType     тип контента
+     */
+    public static void writeResponse(Logger logger,
+                                     String point,
+                                     HttpExchange exchange,
+                                     Supplier<byte[]> responseBuilder,
+                                     int status,
+                                     String contentType) {
         try {
-            exchange.getResponseHeaders().add("Content-type", "application/json;charset=UTF-8");
+            exchange.getResponseHeaders().add("Content-type", contentType);
             var response = responseBuilder.get();
             if (nonNull(response)) {
                 exchange.sendResponseHeaders(status, response.length);

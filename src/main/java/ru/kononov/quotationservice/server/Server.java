@@ -4,6 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import lombok.extern.log4j.Log4j2;
 import ru.kononov.quotationservice.controller.ElvlsController;
 import ru.kononov.quotationservice.controller.HttpController;
+import ru.kononov.quotationservice.controller.SwaggerController;
 import ru.kononov.quotationservice.util.PropertyResolver;
 
 import javax.inject.Inject;
@@ -19,12 +20,15 @@ import java.util.concurrent.Executors;
 public class Server {
 
     private final ElvlsController elvlsController;
+    private final SwaggerController swaggerController;
     private final PropertyResolver propertyResolver;
 
     @Inject
     public Server(ElvlsController elvlsController,
+                  SwaggerController swaggerController,
                   PropertyResolver propertyResolver) {
         this.elvlsController = elvlsController;
+        this.swaggerController = swaggerController;
         this.propertyResolver = propertyResolver;
     }
 
@@ -45,7 +49,7 @@ public class Server {
 
     private void addHandlers(HttpServer server) {
         createContextWithFilter(server, elvlsController);
-//        server.createContext(contextPath + "/swagger", httpController::swagger);
+        server.createContext(swaggerController.getUri(), swaggerController);
     }
 
     private void createContextWithFilter(HttpServer server, HttpController httpController) {
