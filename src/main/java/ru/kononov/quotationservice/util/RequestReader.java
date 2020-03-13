@@ -19,8 +19,8 @@ public class RequestReader {
     /**
      * Получение массива байт из {@link HttpExchange}
      *
-     * @param exchange
-     * @return
+     * @param exchange {@link HttpExchange}, содержащий тело запроса
+     * @return массив байт
      */
     public static byte[] extractPayload(HttpExchange exchange) {
         try (var inputStream = requireNonNull(exchange.getRequestBody())) {
