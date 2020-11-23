@@ -10,17 +10,14 @@ import ru.kononov.quotationservice.logic.GetAllElvlsOperation;
 import ru.kononov.quotationservice.logic.GetElvlOperation;
 import ru.kononov.quotationservice.model.AddElvlRequest;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.ValidatorFactory;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import static java.util.Objects.nonNull;
 import static ru.kononov.quotationservice.constant.ThreadContextKey.OPERATION_NAME;
-import static ru.kononov.quotationservice.error.exception.ExceptionCode.*;
+import static ru.kononov.quotationservice.error.exception.ExceptionCode.V_REQUEST;
+import static ru.kononov.quotationservice.error.exception.ExceptionCode.V_UNSUPPORTED_METHOD;
 import static ru.kononov.quotationservice.error.exception.ExceptionFactory.newApplicationException;
 import static ru.kononov.quotationservice.error.operation.ModuleOperationCode.*;
 import static ru.kononov.quotationservice.util.ControllerMethodWrapper.wrap;
@@ -28,6 +25,7 @@ import static ru.kononov.quotationservice.util.JsonHelper.fromJson;
 import static ru.kononov.quotationservice.util.JsonHelper.toJson;
 import static ru.kononov.quotationservice.util.RequestReader.extractPayload;
 import static ru.kononov.quotationservice.util.ResponseWriter.*;
+import static ru.kononov.quotationservice.validator.ElvlsControllerValidator.validate;
 
 @Log4j2
 public class ElvlsController extends HttpController {
@@ -37,7 +35,6 @@ public class ElvlsController extends HttpController {
     private final GetElvlOperation getElvlOperation;
     private final ErrorBuilder errorBuilder;
     private final Pattern isinPattern = Pattern.compile("[\\d\\D]{12}");
-    private final ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
 
     public ElvlsController(String uri,
                            AddElvlOperation addElvlOperation,
@@ -57,25 +54,39 @@ public class ElvlsController extends HttpController {
                 log, point, exchange,
                 exch -> {
                     var method = exch.getRequestMethod();
-                    var currentUri = exch.getRequestURI().toString();
                     switch (method) {
-                        case "GET":
+                        case "GET" -> {
+                            var currentUri = exch.getRequestURI().toString();
                             if (uri.equals(currentUri)) {
                                 getAllElvls(point, exch);
                             } else {
-                                tryGetElvl(point, exch, currentUri);
+                                getElvl(point, exch, currentUri);
                             }
-                            break;
-                        case "POST":
-                            addElvl(point, exch);
-                            break;
-                        default:
-                            throw newApplicationException(UNKNOWN, V_UNSUPPORTED_METHOD, method);
+                        }
+                        case "POST" -> addElvl(point, exch);
+                        default -> throw newApplicationException(UNKNOWN, V_UNSUPPORTED_METHOD, method);
                     }
                 },
                 (exch, e) -> writeClientErrorResponse(log, point, exch, e, this::errorToJson),
                 (exch, e) -> writeServerErrorResponse(log, point, exch, e, this::errorToJson)
         );
+    }
+
+    private void getAllElvls(String point, HttpExchange exchange) {
+        ThreadContext.put(OPERATION_NAME, GET_ALL_ELVLS.name());
+        var result = getAllElvlsOperation.process();
+        writeOkResponse(log, point, exchange, () -> toJson(result));
+    }
+
+    private void getElvl(String point, HttpExchange exchange, String currentUri) {
+        var isin = extractIsin(currentUri);
+        ThreadContext.put(OPERATION_NAME, GET_ELVL.name());
+        ThreadContext.put("isin", isin);
+        var result = getElvlOperation.process(isin);
+        Supplier<byte[]> responseBuilder = nonNull(result)
+                ? () -> toJson(result)
+                : () -> null;
+        writeOkResponse(log, point, exchange, responseBuilder);
     }
 
     private void addElvl(String point, HttpExchange exchange) {
@@ -87,47 +98,12 @@ public class ElvlsController extends HttpController {
         writeAcceptedResponse(log, point, exchange, () -> toJson(result));
     }
 
-    private void validate(AddElvlRequest request) {
-        var violations = factory.getValidator().validate(request);
-        if (!violations.isEmpty()) {
-            var message = violations.stream()
-                    .map(this::buildErrorMessage)
-                    .collect(Collectors.joining(";"));
-            throw newApplicationException(resolve(), V_REQUEST, message);
-        }
-    }
-
-    private String buildErrorMessage(ConstraintViolation<AddElvlRequest> violation) {
-        return String.format("параметр: %s, текущее значение: %s, сообщение об ошибке: '%s'", violation.getPropertyPath(), violation.getInvalidValue(), violation.getMessage());
-    }
-
-    private void tryGetElvl(String point, HttpExchange exchange, String currentUri) {
-        Optional.of(currentUri.substring(currentUri.indexOf(uri) + uri.length()))
+    private String extractIsin(String currentUri) {
+        return Optional.of(currentUri.substring(currentUri.indexOf(uri) + uri.length()))
                 .filter(fragment -> fragment.startsWith("/"))
                 .map(fragment -> fragment.substring(1))
-                .filter(isin -> isinPattern.matcher(isin).matches())
-                .ifPresentOrElse(
-                        isin -> getElvl(point, exchange, isin),
-                        () -> {
-                            throw newApplicationException(resolve(), V_REQUEST, "Параметр isin имеет некорретный формат");
-                        }
-                );
-    }
-
-    private void getElvl(String point, HttpExchange exchange, String isin) {
-        ThreadContext.put("isin", isin);
-        ThreadContext.put(OPERATION_NAME, GET_ELVL.name());
-        var result = getElvlOperation.process(isin);
-        Supplier<byte[]> responseBuilder = nonNull(result)
-                ? () -> toJson(result)
-                : () -> null;
-        writeOkResponse(log, point, exchange, responseBuilder);
-    }
-
-    private void getAllElvls(String point, HttpExchange exchange) {
-        ThreadContext.put(OPERATION_NAME, GET_ALL_ELVLS.name());
-        var result = getAllElvlsOperation.process();
-        writeOkResponse(log, point, exchange, () -> toJson(result));
+                .filter(fragment -> isinPattern.matcher(fragment).matches())
+                .orElseThrow(() -> newApplicationException(resolve(), V_REQUEST, "Параметр isin имеет некорретный формат"));
     }
 
     private byte[] errorToJson(ApplicationException e) {

@@ -60,8 +60,8 @@ public class DbLoggerHelper {
         if (logger.isTraceEnabled()) {
             logger.trace("{}.out результат: {}", point, result);
         } else if (logger.isDebugEnabled()) {
-            if (result instanceof List) {
-                logger.debug("{}.out количество строк: {}", point, ((List<?>) result).size());
+            if (result instanceof List<?> list) {
+                logger.debug("{}.out количество строк: {}", point, list.size());
             } else {
                 logger.debug("{}.out", point);
             }

@@ -80,8 +80,8 @@ public class LoggingFilter extends Filter {
 
     private void logResponse(HttpExchange exchange) throws IOException {
         try (var bodyStream = exchange.getResponseBody()) {
-            if (bodyStream instanceof ByteArrayOutputStream && ((ByteArrayOutputStream) bodyStream).size() > 0) {
-                var body = ((ByteArrayOutputStream) bodyStream).toString(StandardCharsets.UTF_8.name());
+            if (bodyStream instanceof ByteArrayOutputStream byteArrayOutputStream && byteArrayOutputStream.size() > 0) {
+                var body = byteArrayOutputStream.toString(StandardCharsets.UTF_8.name());
                 logOut(exchange, body);
             } else {
                 logOut(exchange);

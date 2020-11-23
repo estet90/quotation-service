@@ -7,7 +7,7 @@ plugins {
 group "ru.kononov"
 version "1.0.0"
 
-sourceCompatibility = 11
+sourceCompatibility = 15
 
 repositories {
     mavenCentral()
@@ -15,7 +15,7 @@ repositories {
 }
 
 ext {
-    daggerVersion = "2.26"
+    daggerVersion = "2.30"
     lombokVersion = "1.18.12"
     hibernameValidatorVersion = "6.1.2.Final"
 }
@@ -33,7 +33,7 @@ dependencies {
             "commons-cli:commons-cli:1.4",
 
             "com.h2database:h2:1.4.200",
-            "com.zaxxer:HikariCP:3.4.2",
+            "com.zaxxer:HikariCP:3.4.5",
 
             "io.swagger:swagger-annotations:1.5.24",
             "org.openapitools:jackson-databind-nullable:0.2.0",
@@ -95,6 +95,7 @@ sourceSets.main.java {
 
 compileJava() {
     dependsOn generateRestApiWrap
+    options.compilerArgs += ["--enable-preview"]
 }
 
 jar {
@@ -104,9 +105,16 @@ jar {
     }
 }
 
+compileTestJava {
+    options.compilerArgs += ["--enable-preview"]
+}
+
 test {
-    useJUnitPlatform()
+    useJUnitPlatform {
+        excludeEngines "junit-vintage"
+    }
     dependsOn "cleanTest"
+    jvmArgs "--enable-preview"
     testLogging {
         events "passed", "skipped", "failed"
     }

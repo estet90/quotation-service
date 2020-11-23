@@ -1,6 +1,5 @@
 package ru.kononov.quotationservice.module;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import dagger.Module;
 import dagger.Provides;
 import ru.kononov.quotationservice.builder.ErrorBuilder;
@@ -16,12 +15,6 @@ import javax.inject.Singleton;
 
 @Module
 public class HttpControllerModule {
-
-    @Provides
-    @Singleton
-    ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
 
     @Provides
     @Named("contextPath")

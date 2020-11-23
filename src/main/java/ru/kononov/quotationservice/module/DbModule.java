@@ -4,13 +4,14 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import dagger.Module;
 import dagger.Provides;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 
 import javax.inject.Named;
 import javax.inject.Singleton;
 import javax.sql.DataSource;
+import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,15 +40,20 @@ public class DbModule {
 
     private String resolveInitScript() {
         var dbResourceFolder = "db";
-        var files = resolveSqlScriptFiles(dbResourceFolder);
+        Iterator<Path> files;
+        try {
+            files = resolveSqlScriptFiles(dbResourceFolder);
+        } catch (IOException | URISyntaxException e) {
+            log.error("DbModule.resolveInitScript.thrown", e);
+            throw new RuntimeException(e);
+        }
         return StreamSupport.stream(Spliterators.spliteratorUnknownSize(files, Spliterator.ORDERED), false)
                 .map(Path::getFileName)
                 .map(name -> String.format("runscript from 'classpath:/%s/%s'", dbResourceFolder, name))
                 .collect(Collectors.joining("\\;", "quotation;INIT=", ""));
     }
 
-    @SneakyThrows
-    private Iterator<Path> resolveSqlScriptFiles(String dbResourceFolder) {
+    private Iterator<Path> resolveSqlScriptFiles(String dbResourceFolder) throws IOException, URISyntaxException {
         var url = DbModule.class.getClassLoader().getResources(dbResourceFolder).nextElement();
         Path directory;
         var partsOfUri = url.toURI().toString().split("!");
