@@ -1,7 +1,7 @@
 ##  QUOTATION SERVICE
 
 ### 1. Требования
-Java 11+, Gradle 6.0+, Ubuntu
+Java 15, Gradle 6.7.1, Ubuntu
 
 ### 2. Сборка
 `gradle build`
